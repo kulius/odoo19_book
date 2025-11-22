@@ -2,7 +2,7 @@ name: Auto Deploy to Ubuntu
 
 on:
   push:
-    branches: [ "main" ]   # 你要自動部署的分支
+    branches: [ "main" ]
 
 jobs:
   deploy:
@@ -12,15 +12,19 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Upload files via SCP
+    - name: Upload files via SCP (exclude .git)
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_KEY }}
-        source: "."
+        source: "./"
         target: ${{ secrets.TARGET_DIR }}
         overwrite: true
+        rm: true
+        exclude: |
+          .git*
+          .github*
 
     - name: Restart Odoo Service
       uses: appleboy/ssh-action@v1.0.3
@@ -29,4 +33,4 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_KEY }}
         script: |
-          sudo service odoo-server restart
+          sudo /usr/bin/systemctl restart odoo-server
